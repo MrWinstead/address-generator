@@ -34,8 +34,8 @@ struct RawIPGeoEntry {
 
 #[derive(Debug)]
 pub struct IPGeoDatabase {
-    generated_ips: HashMap<String, Vec<Ipv4Addr> >,
-    ipgeo_data: HashMap<String, IPGeoEntry>,
+    generated_ips: HashMap<String, Vec<Ipv4Addr>>,
+    ipgeo_data: HashMap<String, Vec<IPGeoEntry>>,
 }
 
 fn ip2u32(address: &Ipv4Addr) -> u32 {
@@ -95,9 +95,33 @@ impl IPGeoDatabase {
             ip_end: ip_end,
             total_ips: record.total_ips,
         };
-        self.ipgeo_data.insert(entry.country_code.clone(), entry);
+        if ! self.ipgeo_data.contains_key(&entry.country_code) {
+            let new_vec: Vec<IPGeoEntry> = Vec::new();
+            self.ipgeo_data.insert(entry.country_code.clone(), new_vec);
+        }
+
+        let mut entry_list = self.ipgeo_data.get_mut(&entry.country_code).unwrap();
+        entry_list.push(entry);
 
         Ok(true)
+    }
+
+    fn populate_generated_ips(&mut self, country_code: &String) {
+        let all_ip_entries: &Vec<IPGeoEntry> = self.ipgeo_data.get(country_code).unwrap();
+        let mut generated_ip_list: Vec<Ipv4Addr> = Vec::new();
+
+        for entry in all_ip_entries {
+            let mut current_address = ip2u32(&entry.ip_start) + 1; // skip the network address
+            let end_address = ip2u32(&entry.ip_end) - 1; // subtract the broadcast address
+
+            while current_address <= end_address {
+                let addr = Ipv4Addr::from(current_address);
+                generated_ip_list.push(addr);
+                current_address += 1;
+            }
+        }
+
+        self.generated_ips.insert(country_code.clone(), generated_ip_list);
     }
 
 
@@ -108,20 +132,7 @@ impl IPGeoDatabase {
         }
 
         if ! self.generated_ips.contains_key(country_code) {
-            let mut ip_list: Vec<Ipv4Addr> = Vec::new();
-            let entry: &IPGeoEntry = self.ipgeo_data.get(country_code).unwrap();
-            ip_list.reserve(entry.total_ips - 2); // remove the start and end IPs for net and bcast
-
-            let mut current_address = ip2u32(&entry.ip_start) + 1; // skip the network address
-            let end_address = ip2u32(&entry.ip_end) - 1; // subtract the broadcast address
-
-            while current_address <= end_address {
-                let addr = Ipv4Addr::from(current_address);
-                ip_list.push(addr);
-                current_address += 1;
-            }
-
-            self.generated_ips.insert(country_code.clone(), ip_list);
+            self.populate_generated_ips(country_code);
         }
 
         let ip_list = self.generated_ips.get(country_code).unwrap();

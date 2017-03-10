@@ -84,13 +84,12 @@ fn update_country_ip_source<'a>(source_form: Form<UploadRequest>,
     let ref mut ipg_db: IPGeoDatabase = ah_state.ipgeo_database;
 
     let mut resp = Response::new();
-    let handler_ctx_inner = handler_ctx.inner();
 
     if &source.passkey == new_addresses_key {
         let store_result = ipg_db.set_underlying_data(source.data.clone());
         match store_result {
-            Ok(x) => resp.set_status(Status::Ok),
-            Err(y) => resp.set_status(Status::InternalServerError),
+            Ok(store_result) => resp.set_status(Status::Ok),
+            Err(store_result) => resp.set_status(Status::InternalServerError),
         };
     }else {
         resp.set_status(Status::Unauthorized);
