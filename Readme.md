@@ -17,8 +17,8 @@ it works for what I need.
 # Data Source
 
 This generator is designed to use the CSV files which may be found at
-(Nirsoft's Website)[http://www.nirsoft.net/countryip/] with column headers.
-an contrived example of this would be:
+Nirsoft's Website (http://www.nirsoft.net/countryip/) with column headers.
+A contrived example of this would be:
 
 ```text
 country,ip_start,ip_end,total_ips,last_updated,telco
