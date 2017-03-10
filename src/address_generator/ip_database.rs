@@ -46,15 +46,19 @@ fn ip2u32(address: &Ipv4Addr) -> u32 {
 
 impl IPGeoDatabase {
 
-    pub fn new() -> IPGeoDatabase {
-        IPGeoDatabase{
+    pub fn new(source_csv: &String) -> Result<IPGeoDatabase, String> {
+        let mut ret = IPGeoDatabase{
             generated_ips: HashMap::new(),
             ipgeo_data: HashMap::new(),
+        };
+        match ret.set_underlying_data(source_csv) {
+            Ok(_) => Ok(ret),
+            Err(why) => Err(why),
         }
     }
 
-    pub fn set_underlying_data(&mut self, source: String) -> Result<bool, String> {
-        let mut csv_reader = Reader::from_string(source.trim());
+    pub fn set_underlying_data(&mut self, source: &String) -> Result<bool, String> {
+        let mut csv_reader = Reader::from_string(source.clone());
 
         for record in csv_reader.decode() {
             if record.is_err() {
@@ -110,7 +114,10 @@ impl IPGeoDatabase {
         let all_ip_entries: &Vec<IPGeoEntry> = self.ipgeo_data.get(country_code).unwrap();
         let mut generated_ip_list: Vec<Ipv4Addr> = Vec::new();
 
+        print!("Generating addresses for {}: ", country_code);
         for entry in all_ip_entries {
+            print!("{}-{} ", entry.ip_start, entry.ip_end);
+            generated_ip_list.reserve(entry.total_ips);
             let mut current_address = ip2u32(&entry.ip_start) + 1; // skip the network address
             let end_address = ip2u32(&entry.ip_end) - 1; // subtract the broadcast address
 
@@ -120,6 +127,7 @@ impl IPGeoDatabase {
                 current_address += 1;
             }
         }
+        println!("");
 
         self.generated_ips.insert(country_code.clone(), generated_ip_list);
     }
