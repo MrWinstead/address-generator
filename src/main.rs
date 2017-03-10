@@ -1,4 +1,5 @@
 #![feature(plugin)]
+#![feature(custom_derive)]
 #![plugin(rocket_codegen)]
 
 extern crate serde;
@@ -9,7 +10,7 @@ extern crate byteorder;
 extern crate csv;
 extern crate rand;
 extern crate rocket;
-#[macro_use] extern crate rocket_contrib;
+extern crate rocket_contrib;
 extern crate rustc_serialize;
 
 mod address_generator;

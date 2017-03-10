@@ -162,7 +162,7 @@ mod test {
 
     #[test]
     fn test_set_underlying_data() {
-        let mut instance = get_default_instance();
+        let instance = get_default_instance();
         assert_eq!(instance.ipgeo_data.len(), 3);
     }
 
@@ -176,7 +176,7 @@ mod test {
 
     #[test]
     fn test_random_country() {
-        let mut instance = get_default_instance();
+        let instance = get_default_instance();
         let random_code_opt = instance.get_random_country_code();
         if random_code_opt.is_none() {
             assert!(false, "Received no country code");
