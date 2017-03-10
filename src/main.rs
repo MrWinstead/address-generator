@@ -8,7 +8,6 @@ extern crate csv;
 extern crate clap;
 extern crate rand;
 extern crate rocket;
-extern crate rocket_contrib;
 extern crate rustc_serialize;
 extern crate serde;
 
